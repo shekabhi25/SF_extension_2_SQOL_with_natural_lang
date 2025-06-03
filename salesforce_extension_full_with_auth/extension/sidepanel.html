@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Salesforce SOQL Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Load Chart.js directly in the page, with defer to ensure it loads before our code runs -->
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <!-- Add local fallback in case CDN fails -->
+  <script>
+    // Check if Chart.js loaded properly from CDN, if not use a local fallback
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        if (typeof Chart === 'undefined') {
+          console.log('Chart.js not loaded from CDN, using local implementation');
+          // Simple chart implementation for failover
+          window.Chart = class Chart {
+            constructor(ctx, config) {
+              this.ctx = ctx;
+              this.config = config;
+              this.render();
+            }
+            
+            render() {
+              const ctx = this.ctx;
+              const canvas = ctx.canvas;
+              const width = canvas.width;
+              const height = canvas.height;
+              
+              // Clear canvas
+              ctx.clearRect(0, 0, width, height);
+              
+              // Simple rendering for different chart types
+              if (this.config.type === 'bar') {
+                this.renderBarChart();
+              } else if (this.config.type === 'line') {
+                this.renderLineChart();
+              } else if (this.config.type === 'pie') {
+                this.renderPieChart();
+              }
+              
+              // Draw title
+              if (this.config.options?.plugins?.title?.display) {
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.config.options.plugins.title.text, width/2, 20);
+              }
+            }
+            
+            renderBarChart() {
+              const ctx = this.ctx;
+              const canvas = ctx.canvas;
+              const width = canvas.width;
+              const height = canvas.height;
+              const data = this.config.data.datasets[0].data;
+              const labels = this.config.data.labels;
+              const colors = this.config.data.datasets[0].backgroundColor;
+              
+              const maxValue = Math.max(...data);
+              const barWidth = (width - 60) / data.length;
+              const barSpacing = 10;
+              const bottomPadding = 60;
+              
+              // Draw bars
+              data.forEach((value, index) => {
+                const barHeight = ((height - bottomPadding) * value) / maxValue;
+                const color = Array.isArray(colors) ? colors[index % colors.length] : colors;
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(
+                  30 + index * (barWidth + barSpacing),
+                  height - bottomPadding - barHeight,
+                  barWidth,
+                  barHeight
+                );
+                
+                // Draw label
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                  labels[index].substring(0, 12),
+                  30 + index * (barWidth + barSpacing) + barWidth/2,
+                  height - 40
+                );
+                
+                // Draw value
+                ctx.fillText(
+                  value,
+                  30 + index * (barWidth + barSpacing) + barWidth/2,
+                  height - bottomPadding - barHeight - 5
+                );
+              });
+            }
+            
+            renderLineChart() {
+              const ctx = this.ctx;
+              const canvas = ctx.canvas;
+              const width = canvas.width;
+              const height = canvas.height;
+              const data = this.config.data.datasets[0].data;
+              const labels = this.config.data.labels;
+              const color = this.config.data.datasets[0].borderColor;
+              
+              const maxValue = Math.max(...data);
+              const pointSpacing = (width - 60) / (data.length - 1);
+              const bottomPadding = 60;
+              
+              // Draw line
+              ctx.beginPath();
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 2;
+              
+              data.forEach((value, index) => {
+                const x = 30 + index * pointSpacing;
+                const y = height - bottomPadding - ((height - bottomPadding) * value) / maxValue;
+                
+                if (index === 0) {
+                  ctx.moveTo(x, y);
+                } else {
+                  ctx.lineTo(x, y);
+                }
+                
+                // Draw point
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw label
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                  labels[index].substring(0, 12),
+                  x,
+                  height - 40
+                );
+                
+                // Draw value
+                ctx.fillText(
+                  value,
+                  x,
+                  y - 15
+                );
+              });
+              
+              ctx.stroke();
+            }
+            
+            renderPieChart() {
+              const ctx = this.ctx;
+              const canvas = ctx.canvas;
+              const width = canvas.width;
+              const height = canvas.height;
+              const data = this.config.data.datasets[0].data;
+              const labels = this.config.data.labels;
+              const colors = this.config.data.datasets[0].backgroundColor;
+              
+              const total = data.reduce((sum, value) => sum + value, 0);
+              const radius = Math.min(width, height) / 2 - 40;
+              const centerX = width / 2;
+              const centerY = height / 2;
+              
+              let startAngle = 0;
+              
+              // Draw pie segments
+              data.forEach((value, index) => {
+                const sliceAngle = (2 * Math.PI * value) / total;
+                const endAngle = startAngle + sliceAngle;
+                const color = colors[index % colors.length];
+                
+                ctx.beginPath();
+                ctx.fillStyle = color;
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Draw label line and text
+                const midAngle = startAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(midAngle) * (radius + 20);
+                const labelY = centerY + Math.sin(midAngle) * (radius + 20);
+                
+                ctx.beginPath();
+                ctx.strokeStyle = '#999';
+                ctx.moveTo(centerX + Math.cos(midAngle) * radius, centerY + Math.sin(midAngle) * radius);
+                ctx.lineTo(labelX, labelY);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = midAngle < Math.PI ? 'left' : 'right';
+                ctx.fillText(
+                  `${labels[index]} (${value})`,
+                  labelX,
+                  labelY
+                );
+                
+                startAngle = endAngle;
+              });
+            }
+            
+            destroy() {
+              // Clean up
+              const ctx = this.ctx;
+              ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            }
+          };
+        }
+      }, 500);
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <img src="icon.png" alt="Salesforce SOQL Assistant">
+        <h1>Salesforce Assistant</h1>
+      </div>
+      <div class="auth-status">
+        <span id="connection-status">Not connected</span>
+        <button id="auth-button" class="btn-primary">Connect</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="chat-container">
+        <div id="messages">
+          <div class="message system">
+            <div class="message-content">
+              Welcome to Salesforce SOQL Assistant! Ask me anything about your Salesforce data.
+            </div>
+          </div>
+          <!-- Messages will be added here dynamically -->
+        </div>
+      </div>
+
+      <div id="visualization-container" class="hidden">
+        <div class="viz-header">
+          <h3>Data Visualization</h3>
+          <div class="viz-controls">
+            <button id="table-view" class="btn-view active">Table</button>
+            <button id="chart-view" class="btn-view">Chart</button>
+            <select id="chart-type">
+              <option value="bar">Bar Chart</option>
+              <option value="pie">Pie Chart</option>
+              <option value="line">Line Chart</option>
+            </select>
+          </div>
+        </div>
+        <div id="table-container"></div>
+        <div id="chart-container" class="hidden">
+          <canvas id="chart-canvas" width="400" height="300"></canvas>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="input-container">
+        <textarea id="user-input" placeholder="Ask a question about your Salesforce data..."></textarea>
+        <button id="send-button" class="btn-send">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Add this script tag to load Chart.js again before our code, if needed -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html> 

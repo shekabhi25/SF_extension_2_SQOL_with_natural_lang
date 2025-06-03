@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Salesforce SOQL Assistant</title>
+  <style>
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      width: 320px;
+      padding: 15px;
+      color: #3e3e3c;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .header img {
+      width: 32px;
+      height: 32px;
+      margin-right: 10px;
+    }
+    
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    p {
+      margin: 10px 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      padding: 10px 15px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .btn-primary {
+      background-color: #0176d3;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #0161b6;
+    }
+    
+    .btn-secondary {
+      background-color: #f3f3f3;
+      color: #3e3e3c;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #e1e1e1;
+    }
+    
+    .footer {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #706e6b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="icon.png" alt="Salesforce SOQL Assistant">
+    <h2>Salesforce SOQL Assistant</h2>
+  </div>
+  
+  <p>Query your Salesforce data with natural language and visualize the results. Use this extension with any Salesforce org.</p>
+  
+  <div class="buttons">
+    <button id="open-side-panel" class="btn-primary">Open Side Panel</button>
+    <button id="open-options" class="btn-secondary">Configure Settings</button>
+  </div>
+  
+  <div class="footer">
+    <p>Visit any Salesforce org and click the extension icon to open the side panel automatically.</p>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

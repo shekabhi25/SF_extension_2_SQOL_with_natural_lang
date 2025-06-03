@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Salesforce SOQL Assistant",
+  "version": "1.0",
+  "description": "Query Salesforce with natural language and visualize data",
+  "permissions": [
+    "storage", 
+    "activeTab", 
+    "scripting", 
+    "identity", 
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://*.salesforce.com/*",
+    "https://*.force.com/*",
+    "http://localhost:5000/*",
+    "https://dmpbcjpnceenbolebigjleceabcgmbfp.chromiumapp.org/callback"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
